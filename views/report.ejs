@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <!-- daterangepicker CSS -->
+    <link rel="stylesheet" type="text/css" media="all" href="./css/daterangepicker/daterangepicker.css" />
+
+    <!-- bootstrap、jquery -->
+    <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.25.1/moment.min.js"></script>
+
+    <!-- DataTables JS-->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.23/datatables.min.css" />
+    <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.23/datatables.min.js"></script>
+    <script type="text/javascript" src="./js/dataTable/sum.js"></script>
+    <script type="text/javascript" src="./js/dataTable/dataTables.buttons.min.js"></script>
+    <script type="text/javascript" src="./js/dataTable/buttons.html5.min.js"></script>
+    <script type="text/javascript" src="./js/dataTable/jszip.min.js"></script>
+
+    <!-- daterangepicker JS -->
+    <script type="text/javascript" src="./js/daterangepicker/daterangepicker.js"></script>
+
+</head>
+
+<div class="container custom-container-width">
+    <!-- <div class="row align-items-center">
+        <div class="col-md-3">
+            <img src="../logo.png">
+        </div>
+    </div> -->
+
+    <div class="row">
+        <div class="form-group col">
+            <div class="row d-none">
+                <div id="begin_date"></div>
+                <div id="end_date"></div>
+            </div>
+            <label>文章發佈日期: </label>
+            <input type="text" name="dates" class="form-control" id="datePicker">
+        </div>
+        <div class="col form-group " id="deptSection">
+            <label for="exampleFormControlSelect1">選取部門</label>
+            <select class="form-control" id="dept">
+                <option>全部</option>
+                <option>一部</option>
+                <option>二部</option>
+            </select>
+        </div>
+        <div class="form-group col-4 col-md-2">
+            <label> </label><br>
+            <button id="query" type="button" class="btn btn-primary srch-btn w-100"><i class="fas fa-search"></i>
+                查 詢
+                <span class="spinner-border spinner-border-sm invisible" role="status" aria-hidden="true"></span>
+                <span class="sr-only">Loading...</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card-body ">
+            <div class="row text-lg-center total">
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="dataTableArea table_outer" style="white-space: nowrap;">
+                <table id="datatable" class="tablesorter table table-striped table-bordered queryTable"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    dateRangePicker()
+    async function dateRangePicker() {
+        let pickerYesterday = moment(new Date()).add(-1, 'days').format('MM-DD-YYYY');
+        let defaultYesterday = moment(new Date()).add(-1, 'days').format('YYYY-MM-DD');
+        $("#begin_date").html("<text>" + defaultYesterday + "</text>");
+        $("#end_date").html("<text>" + defaultYesterday + "</text>");
+        await $('#datePicker').daterangepicker({
+            "dateLimit": {
+                "days": 370
+            },
+            "startDate": pickerYesterday,
+            "endDate": pickerYesterday,
+            "minDate": "01/01/2020",
+            "maxDate": pickerYesterday
+        }, function(start, end, label) {
+            $("#begin_date").html("<text>" + start.format('YYYY-MM-DD') + "</text>");
+            $("#end_date").html("<text>" + end.format('YYYY-MM-DD') + "</text>");
+        });
+    }
+
+    let innerHTML = ''
+    getPostCount()
+    async function getPostCount() {
+        $('#query').click(async function() {
+            let dept = $('#dept').val(),
+                begin_date = $('#begin_date').text(),
+                end_date = $('#end_date').text();
+            console.log(dept, begin_date, end_date)
+            await fetch('/report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    "dept": dept,
+                    "begin_date": begin_date,
+                    "end_date": end_date,
+                })
+            }).then(res => res.json()).then(res => {
+                console.log(res);
+                if (res.data != '') {
+                    // 每次查詢都先清空數據
+                    $(".dataTableArea").removeClass("invisible");
+                    $(".total").html("<text></text>");
+                    $(".result").html("<text></text>");
+                    if ($.fn.DataTable.isDataTable('#datatable')) {
+                        $('#datatable').DataTable().destroy();
+                        $('#datatable').empty();
+                    }
+                    //把資料建成table  ;  data=table head
+                    let queryTable = document.querySelector(".queryTable");
+                    let data = Object.keys(res.data[0]);
+                    generateTable(queryTable, res.data);
+                    generateTableHead(queryTable, data);
+                    //dataTable相關屬性
+                    let dataTable = $('#datatable').DataTable({
+                        "oLanguage": {
+                            "sSearch": "搜尋:",
+                            "sLengthMenu": "顯示件數 ：_MENU_",
+                            "sInfo": "_TOTAL_件中，從第_START_件顯示到第_END_件",
+                            "sInfoFiltered": " ( _MAX_件中搜尋 )",
+                            "sZeroRecords": "找無資料。",
+                            "sInfoEmpty": "0 件",
+                            "oPaginate": {
+                                "sFirst": "最初",
+                                "sLast": "最後",
+                                "sPrevious": "上一頁",
+                                "sNext": "下一頁"
+                            }
+                        },
+                        "iDisplayLength": 20,
+                        "destroy": true,
+                        "order": [
+                            [3, "desc"]
+                        ],
+                        drawCallback: function(row) {
+                            var intVal = function(i) {
+                                return typeof i === 'string' ?
+                                    i.replace(/[\$,]/g, '') * 1 :
+                                    typeof i === 'number' ?
+                                    i : 0;
+                            };
+                            var api = this.api(),
+                                data;
+                            total = api.column(1, {
+                                filter: 'applied'
+                            }).data().reduce(function(a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            allItem = api.column(2, {
+                                filter: 'applied'
+                            }).data().reduce(function(a, b) {
+                                return intVal(a) + intVal(b);
+                            }, 0);
+                            let totalHtml = '';
+                            totalHtml +=
+                                `
+                                    <div class='col-12 col-xl-3'>總筆數: 
+                                         ${allItem} 
+                                    </div>
+                                    <div class='col-12 col-xl-3'>總PV: 
+                                         ${total} 
+                                    </div>
+                                    <div class='col-12 col-xl-6'>搜尋條件: 
+                                         ${dept} 
+                                    </div>
+                                    `
+                            $(".total").html(totalHtml);
+                        },
+                        'dom': "<'row'<'col-sm-12 col-md-5'l><'col-sm-12 col-md-5'f><'col-sm-12 col-md'B>>" +
+                            "<'row'<'col-sm-12'tr>>" +
+                            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+                        'buttons': [
+                            'excel'
+                        ],
+                    });
+                    //table export btn
+                    $('#datatable_wrapper > div:nth-child(1) > div.col-sm-12.col-md > div > button').html('<i class="fas fa-file-export" aria-hidden="true"></i> 輸出')
+                    $('#datatable_wrapper > div:nth-child(1) > div.col-sm-12.col-md > div > button').addClass('btn btn-primary waves-effect')
+                } else {
+                    //沒撈到資料時 初始化
+                    $("#datatable").empty();
+                    $(".dataTableArea").addClass("invisible");
+                    $(".total").html("<text></text>");
+                    $(".result").html("<text></text>");
+                    $(".result").html("<h4 class='noData' style='color:red'>查無資料</h4>");
+                }
+            })
+        })
+    }
+
+    function generateTableHead(table, data) {
+        let thead = table.createTHead();
+        let row = thead.insertRow();
+        for (let key of data) {
+            let th = document.createElement("th");
+            let text = document.createTextNode(key);
+            th.appendChild(text);
+            row.appendChild(th);
+        }
+    }
+
+    function generateTable(table, data) {
+        for (let element of data) {
+            let row = table.insertRow();
+            for (key in element) {
+                let cell = row.insertCell();
+                let text = document.createTextNode(element[key]);
+                cell.appendChild(text);
+            }
+        }
+    }
+</script>
+</body>
+
+</html>

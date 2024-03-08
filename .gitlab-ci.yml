@@ -1,0 +1,82 @@
+stages:
+  # - test
+  - build_image
+  # - deploy_vm
+  # - deploy_k8s
+
+variables:
+  NODEJS_APP_VERSION: "3.6"
+
+# test_job:
+#   image: node:14.18.0
+#   stage: test
+#   only:
+#     - master
+#   script:
+#     - cp /gitlab-runner/config/config.js ./
+#     - yarn install
+#     - npm run test 
+#   tags: 
+#     - nownews-docker-runner   
+
+publish_image:      
+  image: google/cloud-sdk:alpine
+  stage: build_image  
+  only:
+    - master
+  services:
+    - name: docker:dind
+  before_script:
+    - gcloud auth activate-service-account --key-file /gitlab-runner/gcloud-auth/nownews-analytics.json
+    - gcloud auth configure-docker --quiet
+    - gcloud config set project nownews-analytics
+  script:
+    - echo $NODEJS_APP_VERSION
+    - docker build -t nodejs-template:${NODEJS_APP_VERSION} . --no-cache
+    - docker tag nodejs-template:${NODEJS_APP_VERSION} asia.gcr.io/nownews-analytics/nodejs-template:${NODEJS_APP_VERSION}
+    - docker push asia.gcr.io/nownews-analytics/nodejs-template:${NODEJS_APP_VERSION}
+
+    # push to private registry
+    # - docker tag nodejs-template registry.linx.website/nodejs-template:${NODEJS_APP_VERSION}
+    # - docker push registry.linx.website/nodejs-template:${NODEJS_APP_VERSION}
+  tags:
+    - nownews-docker-runner
+
+#   image: node:14.18.0
+#   stage: deploy_vm
+#   only:
+#     - master
+#   script:
+#     # tail -f /opt/tomcat/logs/catalina.2023-03-01.log -n 30  
+#     - ssh gitlab-runner@172.16.200.6 "cd /devops/ansible/ && sudo ansible-playbook -i ./host/stg ./yaml/cicd/restart_service.yml --extra-vars 'host=stg-bn-rss01'"
+#   tags:
+#     - nown
+
+# deply_job:
+#   image: node:14.18.0
+#   stage: deploy_vm
+#   only:
+#     - master
+#   script:
+#     # tail -f /opt/tomcat/logs/catalina.2023-03-01.log -n 30  
+#     - ssh gitlab-runner@172.16.200.6 "cd /devops/ansible/ && sudo ansible-playbook -i ./host/stg ./yaml/cicd/restart_service.yml --extra-vars 'host=stg-bn-rss01'"
+#   tags:
+#     - nownews-docker-runner
+
+
+# test1_job:
+#   image: node:14.18.0
+#   stage: test1
+#   only:
+#     - master
+#   script:
+#     - echo "$CI_JOB_TOKEN"
+#     - echo "$CI_COMMIT_BRANCH"
+#     - echo "$ENV_ACCOUNT"
+#     - echo "$CI_REGISTRY"
+#     - echo "$GITLAB_APP_REGISTRY"
+#     - echo "$VERSION_NUMBER"
+#     - echo "$CI_PIPELINE_SOURCE"
+#     - echo "$DOCKERFILE_DIR"
+#   tags: 
+#     - nownews-docker-runner 
