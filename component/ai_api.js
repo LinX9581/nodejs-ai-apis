@@ -1,10 +1,68 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { VertexAI } from "@google-cloud/vertexai";
 import OpenAI from "openai";
 import Groq from "groq-sdk";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import axios from "axios";
+
+// Gemini Pro
+// gcloud auth application-default login
+const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
+const model = "gemini-1.0-pro-vision-001";
+
+// Instantiate the models
+const generativeModel = vertex_ai.preview.getGenerativeModel({
+  model: model,
+  generation_config: {
+    max_output_tokens: 2048,
+    temperature: 0.4,
+    top_p: 1,
+    top_k: 32,
+  },
+  safety_settings: [
+    {
+      category: "HARM_CATEGORY_HATE_SPEECH",
+      threshold: "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    {
+      category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+      threshold: "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    {
+      category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+      threshold: "BLOCK_MEDIUM_AND_ABOVE",
+    },
+    {
+      category: "HARM_CATEGORY_HARASSMENT",
+      threshold: "BLOCK_MEDIUM_AND_ABOVE",
+    },
+  ],
+});
+
+async function generateContent() {
+  const req = {
+    contents: [
+      {
+        role: "user",
+        parts: [
+          {
+            text: "Hi", // 將這裡的文字替換成你想要模型處理的輸入
+          },
+        ],
+      },
+    ],
+  };
+
+  const streamingResp = await generativeModel.generateContentStream(req);
+
+  for await (const item of streamingResp.stream) {
+    process.stdout.write("stream chunk: " + JSON.stringify(item));
+  }
+
+  process.stdout.write("aggregated response: " + JSON.stringify(await streamingResp.response));
+}
+
+// generateContent();
 
 // Anthropic
 const anthropic = new Anthropic({
@@ -23,17 +81,6 @@ export async function claude(prompt, content) {
   } catch (error) {
     console.error(error);
   }
-}
-
-// Genini
-const genAI = new GoogleGenerativeAI(process.env.geminiKey);
-export async function gemini(prompt, content) {
-  const totalContent = prompt + content;
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-  const result = await model.generateContent(totalContent);
-  const response = await result.response;
-  const text = response.text();
-  return text;
 }
 
 // Groq
