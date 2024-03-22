@@ -8,7 +8,7 @@ import axios from "axios";
 // Gemini Pro
 // gcloud auth application-default login
 const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
-const model = "gemini-1.0-pro-vision-001";
+const model = "gemini-1.0-pro-001";
 
 // Instantiate the models
 const generativeModel = vertex_ai.preview.getGenerativeModel({
@@ -39,14 +39,14 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
   ],
 });
 
-async function generateContent() {
+export async function gemini(prompt) {
   const req = {
     contents: [
       {
         role: "user",
         parts: [
           {
-            text: "Hi", // 將這裡的文字替換成你想要模型處理的輸入
+            text: prompt,
           },
         ],
       },
@@ -55,14 +55,14 @@ async function generateContent() {
 
   const streamingResp = await generativeModel.generateContentStream(req);
 
-  for await (const item of streamingResp.stream) {
-    process.stdout.write("stream chunk: " + JSON.stringify(item));
-  }
+  // for await (const item of streamingResp.stream) {
+  //   process.stdout.write("stream chunk: " + JSON.stringify(item));
+  // }
 
-  process.stdout.write("aggregated response: " + JSON.stringify(await streamingResp.response));
+  let res = await streamingResp.response;
+  process.stdout.write(res.candidates[0].content.parts[0].text);
+  return res.candidates[0].content.parts[0].text;
 }
-
-// generateContent();
 
 // Anthropic
 const anthropic = new Anthropic({

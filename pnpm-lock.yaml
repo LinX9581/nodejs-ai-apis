@@ -11,9 +11,6 @@ dependencies:
   '@google-cloud/vertexai':
     specifier: ^0.5.0
     version: 0.5.0
-  '@google/generative-ai':
-    specifier: ^0.2.1
-    version: 0.2.1
   axios:
     specifier: ^1.6.7
     version: 1.6.7
@@ -1339,11 +1336,6 @@ packages:
     transitivePeerDependencies:
       - encoding
       - supports-color
-    dev: false
-
-  /@google/generative-ai@0.2.1:
-    resolution: {integrity: sha512-gNmMFadfwi7qf/6M9gImgyGJXY1jKQ/de8vGOqgJ0PPYgQ7WwzZDavbKrIuXS2zdqZZaYtxW3EFN6aG9x5wtFw==}
-    engines: {node: '>=18.0.0'}
     dev: false
 
   /@istanbuljs/load-nyc-config@1.1.0:
