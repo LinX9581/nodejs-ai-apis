@@ -40,28 +40,32 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
 });
 
 export async function gemini(prompt) {
-  const req = {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: prompt,
-          },
-        ],
-      },
-    ],
-  };
+  try {
+    const req = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+    };
 
-  const streamingResp = await generativeModel.generateContentStream(req);
+    const streamingResp = await generativeModel.generateContentStream(req);
 
-  // for await (const item of streamingResp.stream) {
-  //   process.stdout.write("stream chunk: " + JSON.stringify(item));
-  // }
+    // for await (const item of streamingResp.stream) {
+    //   process.stdout.write("stream chunk: " + JSON.stringify(item));
+    // }
 
-  let res = await streamingResp.response;
-  process.stdout.write(res.candidates[0].content.parts[0].text);
-  return res.candidates[0].content.parts[0].text;
+    let res = await streamingResp.response;
+    process.stdout.write(res.candidates[0].content.parts[0].text);
+    return res.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 // Anthropic
