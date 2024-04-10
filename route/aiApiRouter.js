@@ -118,6 +118,9 @@ router.post("/chatgpt4", async (req, res) => {
   try {
     if (req.body.content) {
       const { prompt, content } = req.body;
+      console.log(prompt);
+      console.log(content);
+
       const result = await aiApi.chatGPT4(prompt, content);
       console.log(result);
       res.json({ result });

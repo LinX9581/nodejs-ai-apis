@@ -1,25 +1,41 @@
 import { VertexAI } from "@google-cloud/vertexai";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 import Groq from "groq-sdk";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import axios from "axios";
 
+// const genAI = new GoogleGenerativeAI(process.env.geminiKey);
+
+// async function run() {
+//   // For text-only input, use the gemini-pro model
+//   const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro-vision-001"});
+
+//   const prompt = "Write a story about a magic backpack."
+
+//   const result = await model.generateContent(prompt);
+//   const response = await result.response;
+//   const text = response.text();
+//   console.log(text);
+// }
+
+// run();
+
 // Gemini Pro
-// gcloud auth application-default login
-const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
-const model = "gemini-1.0-pro-vision-001";
+// Initialize Vertex with your Cloud project and location
+const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-east1" });
+const model = "gemini-1.5-pro-preview-0409";
 
 // Instantiate the models
 const generativeModel = vertex_ai.preview.getGenerativeModel({
   model: model,
-  generation_config: {
-    max_output_tokens: 2048,
-    temperature: 0.4,
-    top_p: 1,
-    top_k: 32,
+  generationConfig: {
+    maxOutputTokens: 8192,
+    temperature: 1,
+    topP: 0.95,
   },
-  safety_settings: [
+  safetySettings: [
     {
       category: "HARM_CATEGORY_HATE_SPEECH",
       threshold: "BLOCK_MEDIUM_AND_ABOVE",
@@ -41,23 +57,14 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
 
 async function generateContent() {
   const req = {
-    contents: [
-      {
-        role: "user",
-        parts: [
-          {
-            text: "Hi", // 將這裡的文字替換成你想要模型處理的輸入
-          },
-        ],
-      },
-    ],
+    contents: [],
   };
 
   const streamingResp = await generativeModel.generateContentStream(req);
 
-  for await (const item of streamingResp.stream) {
-    process.stdout.write("stream chunk: " + JSON.stringify(item));
-  }
+  // for await (const item of streamingResp.stream) {
+  //   process.stdout.write("stream chunk: " + JSON.stringify(item) + "\n");
+  // }
 
   process.stdout.write("aggregated response: " + JSON.stringify(await streamingResp.response));
 }
@@ -137,14 +144,14 @@ export async function chatGPT3(prompt, content) {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-3-turbo",
+        model: "gpt-3.5-turbo",
         messages: [
           { role: "system", content: prompt },
           { role: "user", content: content },
         ],
       },
       {
-        headers: { Authorization: `Bearer ${process.env.openaiKey}` },
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       }
     );
 
@@ -159,14 +166,14 @@ export async function chatGPT4(prompt, content) {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4-turbo-preview",
+        model: "gpt-4-turbo",
         messages: [
           { role: "system", content: prompt },
           { role: "user", content: content },
         ],
       },
       {
-        headers: { Authorization: `Bearer ${process.env.openaiKey}` },
+        headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       }
     );
 

@@ -19,8 +19,33 @@ EOF
 yarn install
 npm start
 ```
-* basic env
-express ejs mysql babel global-config docker gitlabci
+
+## test
+
+* model
+chatgpt4 chatgpt3 groq claude
+
+```
+curl --location 'http://127.0.0.1:3006/ai/chatgpt4' \
+--header 'Content-Type: application/json' \
+--data '{
+  "prompt":"你現在是貓 句尾都要加喵喵",
+  "content": "你是誰"
+}'
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Docker
 * build image

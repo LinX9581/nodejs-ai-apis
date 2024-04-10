@@ -29,5 +29,4 @@ const config = {
   ...defaultConfig,
   ...envConfig,
 };
-console.log(config)
 export default config;
