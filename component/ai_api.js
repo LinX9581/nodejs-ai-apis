@@ -7,7 +7,7 @@ import fs from "fs";
 import axios from "axios";
 
 // Gemini Pro
-export async function gemini(prompt) {
+export async function gemini(prompt, content) {
   try {
     const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
     const model = "gemini-1.5-pro-preview-0409";
@@ -18,6 +18,7 @@ export async function gemini(prompt) {
         temperature: 1,
         topP: 0.95,
       },
+      system: prompt,
     });
     const req = {
       contents: [
@@ -25,7 +26,7 @@ export async function gemini(prompt) {
           role: "user",
           parts: [
             {
-              text: prompt,
+              text: content,
             },
           ],
         },

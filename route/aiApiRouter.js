@@ -88,8 +88,8 @@ router.post("/gemini", async function (req, res) {
   const { prompt, content } = req.body;
   console.log(prompt);
   console.log(content);
-  
-  let result = await aiApi.gemini(prompt);
+
+  let result = await aiApi.gemini(prompt, content);
   console.log(result);
   res.send(
     JSON.stringify({
