@@ -6,57 +6,19 @@ import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import axios from "axios";
 
-// const genAI = new GoogleGenerativeAI(process.env.geminiKey);
-
-// async function run() {
-//   // For text-only input, use the gemini-pro model
-//   const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro-vision-001"});
-
-//   const prompt = "Write a story about a magic backpack."
-
-//   const result = await model.generateContent(prompt);
-//   const response = await result.response;
-//   const text = response.text();
-//   console.log(text);
-// }
-
-// run();
-
 // Gemini Pro
-// gcloud auth application-default login
-const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
-const model = "gemini-1.0-pro-001";
-
-// Instantiate the models
-const generativeModel = vertex_ai.preview.getGenerativeModel({
-  model: model,
-  generationConfig: {
-    maxOutputTokens: 8192,
-    temperature: 1,
-    topP: 0.95,
-  },
-  safetySettings: [
-    {
-      category: "HARM_CATEGORY_HATE_SPEECH",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-      category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-      category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-    {
-      category: "HARM_CATEGORY_HARASSMENT",
-      threshold: "BLOCK_MEDIUM_AND_ABOVE",
-    },
-  ],
-});
-
 export async function gemini(prompt) {
   try {
+    const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
+    const model = "gemini-1.5-pro-preview-0409";
+    const generativeModel = vertex_ai.preview.getGenerativeModel({
+      model: model,
+      generationConfig: {
+        maxOutputTokens: 8192,
+        temperature: 1,
+        topP: 0.95,
+      },
+    });
     const req = {
       contents: [
         {
@@ -77,7 +39,6 @@ export async function gemini(prompt) {
     // }
 
     let res = await streamingResp.response;
-    process.stdout.write(res.candidates[0].content.parts[0].text);
     return res.candidates[0].content.parts[0].text;
   } catch (error) {
     console.log(error);
