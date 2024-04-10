@@ -22,8 +22,8 @@ npm start
 
 ## test
 
-* model
-chatgpt4 chatgpt3 groq claude gemini
+* model  
+chatgpt4 chatgpt3 groq claude gemini(需要授權)  
 
 ```
 curl --location 'http://127.0.0.1:3008/ai/chatgpt4' \
@@ -35,24 +35,24 @@ curl --location 'http://127.0.0.1:3008/ai/chatgpt4' \
 ```
 
 ## Docker
-* build image
+* build image  
 ```
 docker build -t ai-api-test:1.0 . --no-cache
 ```
-* image to container
+* image to container  
 ```
 cd /ai-api-test
 docker run -itd -v ./.env:/usr/src/app/.env --name ai-api-test -p 3006:3006 ai-api-test:1.0
 ```
-* ssh to container
+* ssh to container  
 ```
 docker exec -it ai-api-test bash
 ```
-* get container realtime logs
+* get container realtime logs  
 ```
 docker logs --follow ai-api-test
 ```
-* image push to docker hub
+* image push to docker hub  
 ```
 docker login
 docker tag ai-api-test:1.0 linx9581/ai-api-test:1.0
@@ -70,9 +70,9 @@ docker push asia-docker.pkg.dev/project-name/nodejs-repo/ai-api-test:4.6
 
 ```
 ## push to cloud run
+```
 gcloud run deploy my-service5 --image=asia-docker.pkg.dev/project-name/nodejs-repo/ai-api-test:4.6 --region=asia-east1 --platform=managed --allow-unauthenticated --memory=512Mi --cpu=1 --max-instances=3 --timeout=10m --concurrency=1 --set-env-vars=db_user=dev,db_password=00000000
-
-敏感資料應該放 secret manager
+```
 
 ## Build Private Registry
 ```
