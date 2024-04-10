@@ -23,7 +23,7 @@ app.use('/', indexRouter);
 app.use('/ai', aiApiRouter);
 
 const host = '0.0.0.0';
-const port = process.env.PORT || config.port || 3006;
+const port = process.env.PORT || config.port || 3008;
 
 http.listen(port, host, function() {
     console.log("Server started on " + port);

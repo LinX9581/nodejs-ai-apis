@@ -23,9 +23,9 @@ import axios from "axios";
 // run();
 
 // Gemini Pro
-// Initialize Vertex with your Cloud project and location
-const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-east1" });
-const model = "gemini-1.5-pro-preview-0409";
+// gcloud auth application-default login
+const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
+const model = "gemini-1.0-pro-001";
 
 // Instantiate the models
 const generativeModel = vertex_ai.preview.getGenerativeModel({
@@ -55,21 +55,34 @@ const generativeModel = vertex_ai.preview.getGenerativeModel({
   ],
 });
 
-async function generateContent() {
-  const req = {
-    contents: [],
-  };
+export async function gemini(prompt) {
+  try {
+    const req = {
+      contents: [
+        {
+          role: "user",
+          parts: [
+            {
+              text: prompt,
+            },
+          ],
+        },
+      ],
+    };
 
-  const streamingResp = await generativeModel.generateContentStream(req);
+    const streamingResp = await generativeModel.generateContentStream(req);
 
-  // for await (const item of streamingResp.stream) {
-  //   process.stdout.write("stream chunk: " + JSON.stringify(item) + "\n");
-  // }
+    // for await (const item of streamingResp.stream) {
+    //   process.stdout.write("stream chunk: " + JSON.stringify(item));
+    // }
 
-  process.stdout.write("aggregated response: " + JSON.stringify(await streamingResp.response));
+    let res = await streamingResp.response;
+    process.stdout.write(res.candidates[0].content.parts[0].text);
+    return res.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.log(error);
+  }
 }
-
-// generateContent();
 
 // Anthropic
 const anthropic = new Anthropic({
