@@ -129,7 +129,7 @@ export async function chatGPT3(prompt, content) {
         headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
       }
     );
-
+    console.log(response.data.usage);
     return response.data.choices[0].message.content.trim();
   } catch (error) {
     console.error(error);
@@ -152,6 +152,7 @@ export async function chatGPT4(prompt, content) {
       }
     );
 
+    console.log(response.data.usage);
     return response.data.choices[0].message.content.trim();
   } catch (error) {
     console.error(error);
