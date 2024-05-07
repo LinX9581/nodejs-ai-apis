@@ -55,79 +55,110 @@ router.post("/whisper", upload.single("file"), async (req, res) => {
 // Chat
 router.post("/groq", async (req, res) => {
   try {
-    if (req.body.content) {
-      const { prompt, content } = req.body;
-      const result = await aiApi.groq(prompt, content);
-      console.log(result);
-      res.send(
-        JSON.stringify({
-          result,
-        })
-      );
+    const { prompt, content } = req.body;
+
+    if (!prompt || typeof prompt !== "string" || !content) {
+      return res.status(400).json({ message: "Invalid input" });
     }
+
+    console.log(prompt);
+    console.log(content);
+
+    let result = await aiApi.groq(prompt, content);
+
+    console.log(result);
+
+    res.json({ result });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: "groq error" });
   }
 });
 
 router.post("/claude", async function (req, res) {
-  const { prompt, content } = req.body;
-  console.log(prompt);
-  console.log(content);
-  let result = await aiApi.claude(prompt, content);
-  console.log(result);
-  res.send(
-    JSON.stringify({
-      result,
-    })
-  );
+  try {
+    const { prompt, content } = req.body;
+
+    if (!prompt || typeof prompt !== "string" || !content) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
+
+    console.log(prompt);
+    console.log(content);
+
+    let result = await aiApi.claude(prompt, content);
+
+    console.log(result);
+
+    res.json({ result });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "claude error" });
+  }
 });
 
 router.post("/gemini", async function (req, res) {
-  const { prompt, content } = req.body;
-  console.log(prompt);
-  console.log(content);
+  try {
+    const { prompt, content } = req.body;
 
-  let result = await aiApi.gemini(prompt, content);
-  console.log(result);
-  res.send(
-    JSON.stringify({
-      result,
-    })
-  );
+    if (!prompt || typeof prompt !== "string" || !content) {
+      return res.status(400).json({ message: "Invalid input" });
+    }
+
+    console.log(prompt);
+    console.log(content);
+
+    let result = await aiApi.gemini(prompt, content);
+
+    console.log(result);
+
+    res.json({ result });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "gemini error" });
+  }
 });
 
 router.post("/chatgpt3", async (req, res) => {
   try {
-    if (req.body.content) {
-      const { prompt, content } = req.body;
-      console.log(prompt);
-      console.log(content);
+    const { prompt, content } = req.body;
 
-      const result = await aiApi.chatGPT3(prompt, content);
-      console.log(result);
-      res.json({ result });
+    if (!prompt || typeof prompt !== "string" || !content) {
+      return res.status(400).json({ message: "Invalid input" });
     }
+
+    console.log(prompt);
+    console.log(content);
+
+    let result = await aiApi.chatGPT3(prompt, content);
+
+    console.log(result);
+
+    res.json({ result });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: "chatgpt3 error" });
   }
 });
 
 router.post("/chatgpt4", async (req, res) => {
   try {
-    if (req.body.content) {
-      const { prompt, content } = req.body;
-      console.log(prompt);
-      console.log(content);
+    const { prompt, content } = req.body;
 
-      const result = await aiApi.chatGPT4(prompt, content);
-      console.log(result);
-      res.json({ result });
+    if (!prompt || typeof prompt !== "string" || !content) {
+      return res.status(400).json({ message: "Invalid input" });
     }
+
+    console.log(prompt);
+    console.log(content);
+
+    let result = await aiApi.chatGPT4(prompt, content);
+
+    console.log(result);
+
+    res.json({ result });
   } catch (error) {
-    console.error(error);
+    console.log(error);
     res.status(500).json({ message: "chatgpt4 error" });
   }
 });

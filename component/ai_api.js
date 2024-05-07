@@ -84,7 +84,7 @@ export async function groq(prompt, content) {
             content: content,
           },
         ],
-        model: "mixtral-8x7b-32768",
+        model: "llama3-8b-8192",
       })
       .then((chatCompletion) => {
         return chatCompletion.choices[0]?.message?.content;

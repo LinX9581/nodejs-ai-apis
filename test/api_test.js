@@ -29,6 +29,11 @@ async function whisper_test() {
 // chat("chatgpt4");
 // chat("gemini");
 // chat("claude");
+
+// curl -X POST http://127.0.0.1:3008/ai/groq \
+// -H "Content-Type: application/json" \
+// -d '{"prompt": "system", "content": "who are you"}'
+
 async function chat(ai) {
   const data = JSON.stringify({
     prompt: "system",
