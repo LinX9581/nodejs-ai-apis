@@ -52,6 +52,23 @@ router.post("/whisper", upload.single("file"), async (req, res) => {
   }
 });
 
+router.post("/groq_whisper", upload.single("file"), async (req, res) => {
+  try {
+    req.setTimeout(10 * 60 * 1000);
+    console.log("upload file");
+    console.log(req.file);
+    if (req.file) {
+      const result = await aiApi.groq_whisper({ file: req.file });
+      res.json({ result });
+    } else {
+      res.status(400).json({ message: "file not found" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "groq_whisper error" });
+  }
+});
+
 // Chat
 router.post("/groq", async (req, res) => {
   try {
@@ -119,7 +136,7 @@ router.post("/gemini", async function (req, res) {
   }
 });
 
-router.post("/chatgpt3", async (req, res) => {
+router.post("/chatGPT4oMini", async (req, res) => {
   try {
     const { prompt, content } = req.body;
 
@@ -130,18 +147,18 @@ router.post("/chatgpt3", async (req, res) => {
     console.log(prompt);
     console.log(content);
 
-    let result = await aiApi.chatGPT3(prompt, content);
+    let result = await aiApi.chatGPT4oMini(prompt, content);
 
     console.log(result);
 
     res.json({ result });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "chatgpt3 error" });
+    res.status(500).json({ message: "chatGPT4oMini error" });
   }
 });
 
-router.post("/chatgpt4", async (req, res) => {
+router.post("/chatGPT4o", async (req, res) => {
   try {
     const { prompt, content } = req.body;
 
@@ -152,14 +169,14 @@ router.post("/chatgpt4", async (req, res) => {
     console.log(prompt);
     console.log(content);
 
-    let result = await aiApi.chatGPT4(prompt, content);
+    let result = await aiApi.chatGPT4o(prompt, content);
 
     console.log(result);
 
     res.json({ result });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "chatgpt4 error" });
+    res.status(500).json({ message: "chatGPT4o error" });
   }
 });
 

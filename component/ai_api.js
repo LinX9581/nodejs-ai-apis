@@ -5,6 +5,7 @@ import Groq from "groq-sdk";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import axios from "axios";
+import ffmpeg from "fluent-ffmpeg";
 
 // Gemini Pro
 export async function gemini(prompt, content) {
@@ -95,6 +96,33 @@ export async function groq(prompt, content) {
   }
 }
 
+export async function groq_whisper(file) {
+  try {
+    console.log(file.file.path);
+
+    // // ffmpeg conversion
+    // await new Promise((resolve, reject) => {
+    //   ffmpeg(file.file.path).noVideo().output("uploads/2332.mp3").on("end", resolve).on("error", reject).run();
+    // });
+
+    console.log("Audio extraction finished.");
+    // Transcription
+    const transcription = await groq_api.audio.transcriptions.create({
+      file: fs.createReadStream("uploads/2332.mp3"),
+      model: "whisper-large-v3",
+      prompt: "請用繁體中文輸出", // Optional
+      response_format: "json", // Optional
+      language: "zh", // 設置語言為繁體中文
+      temperature: 0.0, // Optional
+    });
+
+    console.log(transcription);
+    // return transcription;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
 // OpenAI
 const apiKey = process.env.OPENAI_API_KEY;
 const openai = new OpenAI(apiKey);
@@ -114,12 +142,12 @@ export async function whisper(file) {
   }
 }
 
-export async function chatGPT3(prompt, content) {
+export async function chatGPT4oMini(prompt, content) {
   try {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [
           { role: "system", content: prompt },
           { role: "user", content: content },
@@ -136,12 +164,12 @@ export async function chatGPT3(prompt, content) {
   }
 }
 
-export async function chatGPT4(prompt, content) {
+export async function chatGPT4o(prompt, content) {
   try {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4-turbo",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: prompt },
           { role: "user", content: content },
