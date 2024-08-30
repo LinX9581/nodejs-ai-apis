@@ -30,7 +30,7 @@ async function whisper_test() {
 // chat("gemini");
 // chat("claude");
 
-// curl -X POST http://127.0.0.1:3008/ai/groq \
+// curl -X POST http://127.0.0.1:3008/ai/gemini \
 // -H "Content-Type: application/json" \
 // -d '{"prompt": "system", "content": "who are you"}'
 
