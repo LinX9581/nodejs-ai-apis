@@ -1,7 +1,9 @@
 import query from "../mysql-connect";
 import express from "express";
 import moment from "moment";
+import * as geminiAiApi from "../component/gemini";
 import * as aiApi from "../component/ai_api";
+import * as imgAiApi from "../component/img_api";
 import multer from "multer";
 const path = require("path");
 const { v4: uuidv4 } = require("uuid"); // 引入 uuid 來生成唯一檔案名
@@ -125,7 +127,7 @@ router.post("/gemini", async function (req, res) {
     console.log(prompt);
     console.log(content);
 
-    let result = await aiApi.gemini(prompt, content);
+    let result = await geminiAiApi.gemini(prompt, content);
 
     console.log(result);
 

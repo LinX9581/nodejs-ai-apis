@@ -1,71 +1,9 @@
-import { VertexAI } from "@google-cloud/vertexai";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import OpenAI from "openai";
 import Groq from "groq-sdk";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "fs";
 import axios from "axios";
 import ffmpeg from "fluent-ffmpeg";
-
-// gemini1()
-async function gemini1() {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({
-    model: "gemini-1.5-pro",
-    tools: [
-      {
-        codeExecution: {},
-      },
-    ],
-  });
-
-  const result = await model.generateContent(
-    "What is the sum of the first 50 prime numbers? " + "Generate and run code for the calculation, and make sure you get all 50."
-  );
-
-  const response = result.response;
-  console.log(response.text());
-}
-
-// Gemini Pro
-export async function gemini(prompt, content) {
-  try {
-    const vertex_ai = new VertexAI({ project: "nownews-ai", location: "asia-northeast1" });
-    const model = "gemini-1.5-flash-001";
-    const generativeModel = vertex_ai.preview.getGenerativeModel({
-      model: model,
-      generationConfig: {
-        maxOutputTokens: 8192,
-        temperature: 1,
-        topP: 0.95,
-      },
-      system: prompt,
-    });
-    const req = {
-      contents: [
-        {
-          role: "user",
-          parts: [
-            {
-              text: content,
-            },
-          ],
-        },
-      ],
-    };
-
-    const streamingResp = await generativeModel.generateContentStream(req);
-
-    // for await (const item of streamingResp.stream) {
-    //   process.stdout.write("stream chunk: " + JSON.stringify(item));
-    // }
-
-    let res = await streamingResp.response;
-    return res.candidates[0].content.parts[0].text;
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 // Anthropic
 const anthropic = new Anthropic({

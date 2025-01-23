@@ -1,8 +1,8 @@
 Arguments: 
-  /root/.nvm/versions/node/v18.12.1/bin/node /root/.cache/node/corepack/yarn/1.22.19/bin/yarn.js add split-file
+  /root/.nvm/versions/node/v18.12.1/bin/node /root/.cache/node/corepack/yarn/1.22.19/bin/yarn.js add replicate
 
 PATH: 
-  /root/.nvm/versions/node/v18.12.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/root/.pulumi/bin
+  /tmp/google-cloud-sdk/bin:/root/.nvm/versions/node/v18.12.1/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/root/.pulumi/bin
 
 Yarn version: 
   1.22.19
@@ -14,7 +14,7 @@ Platform:
   linux x64
 
 Trace: 
-  Error: EEXIST: file already exists, mkdir '/devops/github/ai-api-template/node_modules/body-parser/node_modules'
+  Error: ENOENT: no such file or directory, copyfile '/usr/local/share/.cache/yarn/v6/npm-ms-2.0.0-5608aeadfc00be6c2901df5f9861788de0d597c8-integrity/node_modules/ms/index.js' -> '/devops/github/ai-api-template/node_modules/body-parser/node_modules/ms/index.js'
 
 npm manifest: 
   {
@@ -45,6 +45,8 @@ npm manifest:
       "dotenv": "^16.0.3",
       "ejs": "^3.1.8",
       "express": "^4.18.2",
+      "ffmpeg-static": "^5.2.0",
+      "fluent-ffmpeg": "^2.1.3",
       "googleapis": "^123.0.0",
       "groq-sdk": "^0.3.1",
       "lodash": "^4.17.21",
@@ -52,7 +54,8 @@ npm manifest:
       "multer": "1.4.5-lts.1",
       "mysql2": "^2.3.3",
       "node-schedule": "^2.1.0",
-      "openai": "^4.28.0"
+      "openai": "^4.28.0",
+      "split-file": "^2.3.0"
     },
     "devDependencies": {
       "@babel/core": "^7.20.5",

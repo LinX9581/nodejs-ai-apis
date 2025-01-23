@@ -36,6 +36,7 @@
     "mysql2": "^2.3.3",
     "node-schedule": "^2.1.0",
     "openai": "^4.28.0",
+    "replicate": "^0.33.0",
     "split-file": "^2.3.0"
   },
   "devDependencies": {
