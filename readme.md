@@ -1,93 +1,59 @@
-# start
+## AI API Template (OpenAI/Claude/Gemini)
+
+### 環境變數
 ```
-git clone https://github.com/LinX9581/ai-api-template.git
-cd ai-api-template
-cat>.env<<EOF
-db_host=172.16.200.6
-db_user=docker
-db_password=00000000
-port_test = 4006
-port_dev = 4007
-port_prod = 3006
+OPENAI_API_KEY=
+CLAUDE_API_KEY=
+GOOGLE_CLOUD_PROJECT=
+VERTEX_LOCATION=us-central1
+# 可選：覆蓋預設模型
+# CLAUDE_MODEL=claude-3-5-sonnet-20241022
+# GEMINI_MODEL=gemini-2.0-flash-001
+```
 
-GEMINI_API_KEY = 
-OPENAI_API_KEY = 
-GROQ_API_KEY = 
-CLAUDE_API_KEY = 
-
-EOF
-yarn install
+### 開發與啟動
+```
+npm install
 npm start
+# 本機預設 PORT=3008，可由環境變數 PORT 覆蓋
 ```
 
-## test
+### API 使用（伺服器控制模型）
+- `POST /ai/gpt/gpt5` → 使用 OpenAI（伺服器以環境變數控制 `OPENAI_DEFAULT_MODEL`，預設 gpt-5-mini）
+- `POST /ai/gemini/gemini2.5` → 使用 Vertex Gemini（伺服器以環境變數控制 `GEMINI_MODEL`）
+- `POST /ai/claude/claude4` → 使用 Claude（伺服器以環境變數控制 `CLAUDE_MODEL`）
 
-* model  
-chatgpt4 chatgpt3 groq claude gemini(需要授權)  
-
+請求 body（必填 `prompt`, `content`）：
 ```
-curl --location 'http://127.0.0.1:3008/ai/chatgpt4' \
---header 'Content-Type: application/json' \
---data '{
-  "prompt":"你現在是貓 句尾都要加喵喵",
-  "content": "你是誰"
-}'
+{ "prompt": "system 設定", "content": "使用者輸入" }
 ```
 
-## Docker
-* build image  
+回應為單行文字（不包含 AI 文字輸出）：
 ```
-docker build -t ai-api-test:1.0 . --no-cache
-```
-* image to container  
-```
-cd /ai-api-test
-docker run -itd -v ./.env:/usr/src/app/.env --name ai-api-test -p 3006:3006 ai-api-test:1.0
-```
-* ssh to container  
-```
-docker exec -it ai-api-test bash
-```
-* get container realtime logs  
-```
-docker logs --follow ai-api-test
-```
-* image push to docker hub  
-```
-docker login
-docker tag ai-api-test:1.0 linx9581/ai-api-test:1.0
-docker push linx9581/ai-api-test:1.0
-```
-## push image to artifactory registry
-```
-gcloud auth activate-service-account --key-file project-name.json
-gcloud config set project project-name
-gcloud auth configure-docker asia-docker.pkg.dev
-
-gcloud artifacts repositories create nodejs-repo --repository-format=docker --location=asia --description="Docker repository"
-docker build -t asia-docker.pkg.dev/project-name/nodejs-repo/ai-api-test:4.6 . --no-cache
-docker push asia-docker.pkg.dev/project-name/nodejs-repo/ai-api-test:4.6
-
-```
-## push to cloud run
-```
-gcloud run deploy my-service5 --image=asia-docker.pkg.dev/project-name/nodejs-repo/ai-api-test:4.6 --region=asia-east1 --platform=managed --allow-unauthenticated --memory=512Mi --cpu=1 --max-instances=3 --timeout=10m --concurrency=1 --set-env-vars=db_user=dev,db_password=00000000
+/ai/gpt/gpt5 model=gpt-5-mini total_tokens=123 duration_ms=85
 ```
 
-## Build Private Registry
+### Docker
 ```
-docker run -d -p 3008:5000 -v /docker/registry:/var/lib/registry --name registry registry:2
-cat>/etc/docker/daemon.json<<EOF
-{ "insecure-registries":["IP:3008"] }
-EOF
-systemctl restart docker
+docker build -t ai-api-template:latest .
+docker run --rm -p 3008:3008 \
+  -e OPENAI_API_KEY=sk-xxx \
+  -e CLAUDE_API_KEY=xxx \
+  -e GOOGLE_CLOUD_PROJECT=your-gcp-project \
+  -e VERTEX_LOCATION=us-central1 \
+  ai-api-template:latest
+```
 
-docker tag ai-api-test IP:3008/ai-api-test:1.1
-docker push IP:3008/ai-api-test:1.1
-docker pull IP:3008/ai-api-test:1.1
+### 部署到 Cloud Run（範例）
+```
+gcloud run deploy ai-api-template \
+  --image=asia-docker.pkg.dev/PROJECT/REPO/ai-api-template:latest \
+  --region=asia-east1 --platform=managed --allow-unauthenticated \
+  --set-env-vars=OPENAI_API_KEY=sk-xxx,CLAUDE_API_KEY=xxx,GOOGLE_CLOUD_PROJECT=your-gcp-project,VERTEX_LOCATION=us-central1
+```
 
-curl -X GET IP:3008/v2/_catalog
-curl -X GET IP:3008/v2/mytomcat/tags/list
-
-docker run -d -p 3009:8080 --name registry-web --link registry -e REGISTRY_URL=http://IP:3008/v2 hyper/docker-registry-web
+### 測試
+僅進行 OpenAI GPT-5 API smoke test：
+```
+npm test
 ```

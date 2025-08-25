@@ -1,0 +1,10 @@
+name: ai-api-template
+services:
+  app:
+    build: .
+    image: ai-api-template:v1.0.0
+    container_name: ai-api-template
+    ports:
+      - "3009:3009"
+    env_file:
+      - .env
