@@ -12,7 +12,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/ai', aiRouter);
 
 const host = '0.0.0.0';
-const port = process.env.PORT || 3009;
+const port = process.env.PORT || 3005;
 
 if (process.env.NODE_ENV !== 'test') {
   app.listen(port, host, () => {
