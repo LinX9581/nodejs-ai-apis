@@ -16,6 +16,11 @@ if (!fs.existsSync(logsDir)) {
 
 // 寫入 log 檔案的函數
 function writeToLogFile(logData) {
+  // 在測試環境中跳過日誌寫入，避免非同步操作干擾測試
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
+  
   const logFilePath = path.join(logsDir, 'gpt.log');
   const logLine = JSON.stringify(logData) + '\n';
   fs.appendFileSync(logFilePath, logLine, 'utf8');

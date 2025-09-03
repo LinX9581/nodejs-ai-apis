@@ -1,5 +1,10 @@
 # Base image
 FROM node:22-alpine
+
+# 設定時區為台北時間
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Taipei
+
 # Create app directory
 WORKDIR /usr/src/app
 

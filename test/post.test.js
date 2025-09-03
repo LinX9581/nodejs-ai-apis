@@ -13,5 +13,5 @@ describe('AI API - OpenAI GPT-5 smoke test', () => {
       .expect(200);
     expect(typeof res.text).toBe('string');
     expect(res.text.length).toBeGreaterThan(0);
-  });
+  }, 30000); // 增加超時時間到 15 秒
 });

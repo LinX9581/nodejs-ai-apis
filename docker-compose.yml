@@ -6,5 +6,10 @@ services:
     container_name: ai-api-template
     ports:
       - "3009:3009"
+    environment:
+      - TZ=Asia/Taipei
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     env_file:
       - .env
