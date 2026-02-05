@@ -1,6 +1,17 @@
 import OpenAI from 'openai';
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// 延遲初始化 OpenAI Client（避免 API Key 未設定時 crash）
+let client = null;
+
+function getOpenAIClient() {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY 環境變數未設定');
+  }
+  if (!client) {
+    client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return client;
+}
 
 export async function chatOpenAI({ model, prompt, content, jsonMode = false }) {
   // 直接使用傳入的 model（由路由層透過環境變數控制）
@@ -18,7 +29,8 @@ export async function chatOpenAI({ model, prompt, content, jsonMode = false }) {
       requestOptions.response_format = { type: "json_object" };
     }
 
-    const response = await client.chat.completions.create(requestOptions);
+    const openaiClient = getOpenAIClient();
+    const response = await openaiClient.chat.completions.create(requestOptions);
     const usage = response.usage || {};
     const text = response?.choices?.[0]?.message?.content ?? '';
     return {

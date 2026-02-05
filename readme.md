@@ -1,5 +1,5 @@
 # Node.js AI APIs 服務
-
+vibe coding
 基於 Express.js 的 AI API 服務，支援 OpenAI、Claude 和 Gemini 模型，提供統一的 API 介面和完整的請求日誌記錄。
 
 ## 環境變數設定
@@ -7,16 +7,20 @@
 ```env
 # OpenAI 設定
 OPENAI_API_KEY=sk-your-openai-key
-OPENAI_DEFAULT_MODEL=gpt-5.2
+OPENAI_MODEL_GPT5=gpt-5.2
+OPENAI_MODEL_TRANSLATE=gpt-5.2
+OPENAI_MODEL_GPT_SEARCH=gpt-4o-search-preview
+
+# Google Cloud Vertex AI & GenAI 設定
+# https://aistudio.google.com/ GenAI 的 key 要在這建立
+GOOGLE_CLOUD_PROJECT=your-gcp-project
+GOOGLE_GENAI_API_KEY=your-genai-key
+GEMINI_MODEL_CHAT=gemini-2.5-flash
+GEMINI_MODEL_TRANSLATE=gemini-2.5-flash
 
 # Claude 設定
 CLAUDE_API_KEY=your-claude-key
 CLAUDE_MODEL=claude-3-5-sonnet-20241022
-
-# Google Cloud Vertex AI 設定
-GOOGLE_CLOUD_PROJECT=your-gcp-project
-VERTEX_LOCATION=us-central1
-GEMINI_MODEL=gemini-3-flash-preview
 
 # 伺服器設定
 PORT=3005
@@ -38,9 +42,13 @@ npm test
 
 | 端點 | 模型 | JSON模式 | 回應格式 | 說明 |
 |------|------|----------|----------|------|
-| `POST /ai/gpt/gpt5` | gpt-5-mini | ✅ | text/plain | GPT-5 Mini 模型 |
-| `POST /ai/translate` | gpt-5-nano | ✅ | application/json | 翻譯專用，JSON 回應 |
-| `POST /ai/gptSearch` | gpt-4o-search-preview | ✅ | text/plain | GPT-4o 搜尋預覽版 |
+| `POST /openai/chat` | gpt-5.2 | ✅ | text/plain | GPT-5.2 模型 |
+| `POST /openai/translate` | gpt-5.2 | ✅ | application/json | 翻譯專用，JSON 回應 |
+| `POST /openai/gptSearch` | gpt-4o-search-preview | ✅ | text/plain | GPT-4o 搜尋預覽版 |
+| `POST /gemini/chat` | gemini-2.5-flash | ✅ | text/plain | Gemini 2.5 Flash 模型 |
+| `POST /gemini/translate` | gemini-2.5-flash | ✅ | application/json | 翻譯專用，JSON 回應 |
+| `POST /gemini-genai/chat` | gemini-2.5-flash | ✅ | text/plain | Gemini 2.5 Flash 模型 |
+| `POST /gemini-genai/translate` | gemini-2.5-flash | ✅ | application/json | 翻譯專用，JSON 回應 |
 
 ### 請求格式
 
@@ -62,7 +70,7 @@ npm test
 
 ```bash
 # GPT-5 Mini 文字生成
-curl -X POST http://localhost:3005/ai/gpt/gpt5 \
+curl -X POST http://localhost:3005/openai/chat \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "你是一個專業的技術文件撰寫助手但只會寫笑話",
@@ -70,7 +78,7 @@ curl -X POST http://localhost:3005/ai/gpt/gpt5 \
   }'
 
 # 翻譯服務 (JSON 回應)
-curl -X POST http://localhost:3005/ai/translate \
+curl -X POST http://localhost:3005/openai/translate \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "請將以下文字翻譯成日文，以 JSON 格式回應",
@@ -78,12 +86,28 @@ curl -X POST http://localhost:3005/ai/translate \
   }'
 
 # GPT-4o 搜尋
-curl -X POST http://localhost:3005/ai/gptSearch \
+curl -X POST http://localhost:3005/openai/gptSearch \
   -H "Content-Type: application/json" \
   -d '{
     "prompt": "搜尋並總結最新資訊",
     "content": "Node.js 最新版本的新功能"
   }'
+
+# Google GenAI 可用 3
+curl -X POST http://localhost:3005/gemini-genai/chat \
+-H "Content-Type: application/json" \
+-d '{
+  "prompt": "你是一個專業的技術文件撰寫助手但只會寫笑話",
+  "content": "請給我一個笑話"
+}'
+
+# Vertex AI 目前只能用 2.5
+curl -X POST http://localhost:3005/gemini/chat \
+-H "Content-Type: application/json" \
+-d '{
+  "prompt": "你是一個專業的技術文件撰寫助手但只會寫笑話",
+  "content": "請給我一個笑話"
+}'
 ```
 
 ## 日誌系統
@@ -97,20 +121,6 @@ curl -X POST http://localhost:3005/ai/gptSearch \
 - Token 使用量
 - 回應時間
 - 錯誤資訊（如有）
-
-## 支援的 AI 模型
-
-### OpenAI 模型
-- `gpt-5-mini` (預設)
-- `gpt-5`
-- `gpt-5-nano`
-- `gpt-4o-search-preview`
-
-### Claude 模型
-- `claude-3-5-sonnet-20241022` (預設)
-
-### Gemini 模型
-- `gemini-2.0-flash-001` (預設)
 
 ## Docker 部署
 
@@ -150,31 +160,11 @@ gcloud run deploy nodejs-ai-apis \
   --set-env-vars=OPENAI_API_KEY=sk-xxx,CLAUDE_API_KEY=xxx,GOOGLE_CLOUD_PROJECT=your-project,VERTEX_LOCATION=us-central1
 ```
 
-## 專案結構
-
-```
-nodejs-ai-apis/
-├── index.js              # 主要應用程式入口
-├── route/
-│   └── ai.js             # AI API 路由處理
-├── providers/
-│   ├── openai.js         # OpenAI 整合
-│   ├── anthropic.js      # Claude 整合
-│   └── gemini.js         # Gemini 整合
-├── logs/                 # 日誌檔案目錄
-├── test/                 # 測試檔案
-├── package.json          # 專案依賴
-├── dockerfile            # Docker 設定
-└── docker-compose.yml    # Docker Compose 設定
-```
-
 ## 開發說明
 
 - **Node.js 版本**：需要 22.0.0 或以上版本
 - **架構**：使用 ES Modules (type: "module")
 - **框架**：Express.js 4.19.2
-- **日誌**：使用 moment.js 處理時區 (UTC+8)
-- **錯誤處理**：完整的錯誤追蹤和記錄機制
 
 ## 測試
 
