@@ -2,7 +2,7 @@ import { VertexAI, HarmCategory, HarmBlockThreshold } from '@google-cloud/vertex
 
 const project = process.env.GOOGLE_CLOUD_PROJECT;
 const location = process.env.VERTEX_LOCATION || 'us-central1';
-const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.0-flash-001';
+const DEFAULT_GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-2.5-pro';
 
 const vertexAI = new VertexAI({ project, location });
 

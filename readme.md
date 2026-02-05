@@ -2,21 +2,12 @@
 
 基於 Express.js 的 AI API 服務，支援 OpenAI、Claude 和 Gemini 模型，提供統一的 API 介面和完整的請求日誌記錄。
 
-## 專案特色
-
-- 🚀 支援多種 AI 模型：OpenAI GPT、Claude、Gemini
-- 📝 完整的請求/回應日誌記錄
-- 🔧 靈活的路由配置系統
-- 🛡️ 錯誤處理和追蹤機制
-- 🐳 Docker 支援
-- ⚡ 高效能的 Node.js 22+ 架構
-
 ## 環境變數設定
 
 ```env
 # OpenAI 設定
 OPENAI_API_KEY=sk-your-openai-key
-OPENAI_DEFAULT_MODEL=gpt-5-mini
+OPENAI_DEFAULT_MODEL=gpt-5.2
 
 # Claude 設定
 CLAUDE_API_KEY=your-claude-key
@@ -25,7 +16,7 @@ CLAUDE_MODEL=claude-3-5-sonnet-20241022
 # Google Cloud Vertex AI 設定
 GOOGLE_CLOUD_PROJECT=your-gcp-project
 VERTEX_LOCATION=us-central1
-GEMINI_MODEL=gemini-2.0-flash-001
+GEMINI_MODEL=gemini-3-flash-preview
 
 # 伺服器設定
 PORT=3005
@@ -35,16 +26,9 @@ NODE_ENV=production
 ## 安裝與啟動
 
 ```bash
-# 安裝依賴
 npm install
-
-# 開發模式
 npm run dev
-
-# 生產模式
 npm start
-
-# 執行測試
 npm test
 ```
 
@@ -81,15 +65,15 @@ npm test
 curl -X POST http://localhost:3005/ai/gpt/gpt5 \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "你是一個專業的技術文件撰寫助手",
-    "content": "請幫我寫一個 README 檔案"
+    "prompt": "你是一個專業的技術文件撰寫助手但只會寫笑話",
+    "content": "請給我一個笑話"
   }'
 
 # 翻譯服務 (JSON 回應)
 curl -X POST http://localhost:3005/ai/translate \
   -H "Content-Type: application/json" \
   -d '{
-    "prompt": "請將以下文字翻譯成繁體中文，以 JSON 格式回應",
+    "prompt": "請將以下文字翻譯成日文，以 JSON 格式回應",
     "content": "Hello, how are you today?"
   }'
 

@@ -3,6 +3,7 @@ import moment from 'moment';
 import fs from 'fs';
 import path from 'path';
 import { chatOpenAI } from '../providers/openai.js';
+
 // import { chatClaude } from '../providers/anthropic.js';
 // import { chatGemini } from '../providers/gemini.js';
 
@@ -26,24 +27,27 @@ function writeToLogFile(logData) {
   fs.appendFileSync(logFilePath, logLine, 'utf8');
 }
 
-// 路由配置表：定義每個端點的特性
+// 路由配置表：定義每個端點的特性（模型由環境變數控制）
 const ROUTE_CONFIG = {
   '/gpt/gpt5': {
-    model: 'gpt-5-mini',
+    model: process.env.OPENAI_MODEL_GPT5 || 'gpt-5.2',
     jsonMode: false,
     responseType: 'text/plain'
   },
   '/translate': {
-    model: 'gpt-5-nano',
+    model: process.env.OPENAI_MODEL_TRANSLATE || 'gpt-5.2',
     jsonMode: true,
     responseType: 'application/json'
   },
   '/gptSearch': {
-    model: 'gpt-4o-search-preview',
+    model: process.env.OPENAI_MODEL_GPT_SEARCH || 'gpt-4o-search-preview',
     jsonMode: false,
     responseType: 'text/plain'
   }
 };
+
+// 內容長度限制（字元數）
+const MAX_CONTENT_LENGTH = 50000;
 
 // 生成追蹤 ID
 function generateTraceId() {
@@ -54,7 +58,10 @@ function generateTraceId() {
 async function handleAIRequest(req, res, routeConfig) {
   const startAtMs = Date.now();
   const traceId = generateTraceId();
-  const userIp = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'] || 'unknown';
+  const userIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() 
+    || req.ip 
+    || req.socket?.remoteAddress 
+    || 'unknown';
   const userAgent = req.get('User-Agent') || 'unknown';
   
   try {
@@ -63,6 +70,13 @@ async function handleAIRequest(req, res, routeConfig) {
     // 驗證必填參數
     if (!prompt || !content) {
       return res.status(400).json({ message: 'prompt, content 為必填' });
+    }
+
+    // 驗證內容長度
+    if (content.length > MAX_CONTENT_LENGTH) {
+      return res.status(400).json({ 
+        message: `Content 超過長度限制 (最大 ${MAX_CONTENT_LENGTH} 字元)` 
+      });
     }
 
     // 使用路由配置

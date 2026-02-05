@@ -2,13 +2,11 @@ import OpenAI from 'openai';
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-const MODEL_MAP = new Set(['gpt-5', 'gpt-5-mini', 'gpt-5-nano', 'gpt-4o-search-preview']);
-
 export async function chatOpenAI({ model, prompt, content, jsonMode = false }) {
-  const selectedModel = MODEL_MAP.has(model) ? model : (process.env.OPENAI_DEFAULT_MODEL || 'gpt-5-mini');
+  // 直接使用傳入的 model（由路由層透過環境變數控制）
   try {
     const requestOptions = {
-      model: selectedModel,
+      model,
       messages: [
         { role: 'system', content: prompt },
         { role: 'user', content },
@@ -25,7 +23,7 @@ export async function chatOpenAI({ model, prompt, content, jsonMode = false }) {
     const text = response?.choices?.[0]?.message?.content ?? '';
     return {
       api: 'openai.chat.completions',
-      model: selectedModel,
+      model,
       totalTokens: usage.total_tokens ?? (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0),
       text,
     };
