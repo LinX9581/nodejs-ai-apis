@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>
+    <%= pageTitle %>
+  </title>
+  <style>
+    :root {
+      --bg: #f4efe6;
+      --paper: rgba(255, 251, 245, 0.9);
+      --paper-strong: #fffdf8;
+      --ink: #1f2a37;
+      --muted: #5f6b7a;
+      --line: rgba(31, 42, 55, 0.12);
+      --accent: #ad3f2f;
+      --accent-soft: rgba(173, 63, 47, 0.12);
+      --blue: #1b5c85;
+      --green: #2b6b4a;
+      --shadow: 0 24px 80px rgba(48, 39, 32, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at top left, rgba(173, 63, 47, 0.14), transparent 28%),
+        radial-gradient(circle at top right, rgba(27, 92, 133, 0.12), transparent 24%),
+        linear-gradient(180deg, #efe5d3 0%, #f7f2e8 45%, #efe8dd 100%);
+      min-height: 100vh;
+    }
+
+    .shell {
+      width: min(1280px, calc(100vw - 32px));
+      margin: 32px auto 48px;
+    }
+
+    .hero,
+    .panel,
+    .history-card {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    .hero {
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(32px, 4vw, 52px);
+      line-height: 1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    form {
+      display: grid;
+      gap: 20px;
+    }
+
+    .compare-grid,
+    .result-grid,
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .panel {
+      padding: 22px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 20px;
+    }
+
+    .badge {
+      display: inline-flex;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .badge-openai {
+      background: rgba(27, 92, 133, 0.14);
+      color: var(--blue);
+    }
+
+    .badge-gemini {
+      background: rgba(43, 107, 74, 0.14);
+      color: var(--green);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    textarea,
+    select {
+      width: 100%;
+      border: 1px solid rgba(31, 42, 55, 0.16);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font: inherit;
+      color: var(--ink);
+      background: var(--paper-strong);
+    }
+
+    textarea {
+      min-height: 220px;
+      resize: vertical;
+      line-height: 1.6;
+    }
+
+    .content-box textarea {
+      min-height: 260px;
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .button {
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #ad3f2f, #cf6d2a);
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      padding: 14px 22px;
+      cursor: pointer;
+    }
+
+    .button-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-top-color: white;
+      display: none;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .spinner.is-visible {
+      display: inline-block;
+    }
+
+    .button:disabled {
+      opacity: 0.7;
+      cursor: wait;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .hint,
+    .meta,
+    .empty {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .status {
+      min-height: 22px;
+      font-size: 14px;
+    }
+
+    .status[data-tone="error"] {
+      color: #b42318;
+    }
+
+    .status[data-tone="ok"] {
+      color: var(--green);
+    }
+
+    .result-box {
+      min-height: 340px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.56);
+      padding: 16px;
+      white-space: pre-wrap;
+      line-height: 1.7;
+    }
+
+    .result-box.error {
+      color: #b42318;
+      background: rgba(180, 35, 24, 0.06);
+    }
+
+    .meta {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 0 0 12px;
+    }
+
+    .history-card {
+      padding: 18px;
+    }
+
+    .history-card h3 {
+      margin: 0 0 10px;
+    }
+
+    .spec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px 12px;
+      margin-top: 14px;
+      padding: 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.52);
+      border: 1px solid var(--line);
+      font-size: 13px;
+    }
+
+    .spec-grid strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .history-card pre {
+      margin: 10px 0 0;
+      padding: 12px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.52);
+      white-space: pre-wrap;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    @media (max-width: 900px) {
+
+      .compare-grid,
+      .result-grid,
+      .history-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .shell {
+        width: min(100vw - 20px, 1280px);
+        margin-top: 12px;
+      }
+
+      .hero,
+      .panel,
+      .history-card {
+        border-radius: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    window.MODEL_CATALOG = <%- JSON.stringify(modelCatalog) %>;
+  </script>
+  <main class="shell">
+    <form id="compare-form">
+      <section class="compare-grid">
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">左側模型</h2>
+            <span class="badge badge-openai">OpenAI</span>
+          </div>
+          <label for="left-model">模型</label>
+          <select id="left-model" name="leftModel">
+            <% openaiModels.forEach((model, index)=> { %>
+              <option value="<%= model.value %>" <%=index===0 ? 'selected' : '' %>><%= model.label %>
+              </option>
+              <% }) %>
+          </select>
+          <label for="left-prompt" style="margin-top: 14px;">角色 / Prompt</label>
+          <textarea id="left-prompt" name="leftPrompt"><%= defaultLeftPrompt %></textarea>
+          <div class="spec-grid" id="left-specs"></div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-head">
+            <h2 class="panel-title">右側模型</h2>
+            <span class="badge badge-gemini">Gemini</span>
+          </div>
+          <label for="right-model">模型</label>
+          <select id="right-model" name="rightModel">
+            <% geminiModels.forEach((model, index)=> { %>
+              <option value="<%= model.value %>" <%=index===0 ? 'selected' : '' %>><%= model.label %>
+              </option>
+              <% }) %>
+          </select>
+          <label for="right-prompt" style="margin-top: 14px;">角色 / Prompt</label>
+          <textarea id="right-prompt" name="rightPrompt"><%= defaultRightPrompt %></textarea>
+          <div class="spec-grid" id="right-specs"></div>
+        </article>
+      </section>
+
+      <section class="panel content-box">
+        <div class="toolbar">
+          <div>
+            <h2 class="panel-title" style="margin: 0;">共用內容</h2>
+            <p class="hint" style="margin: 6px 0 0;">把要比較的新聞稿貼在這裡，兩個模型都會讀同一份內容。</p>
+          </div>
+          <button class="button" type="submit" id="submit-button">
+            <span class="button-row">
+              <span class="spinner" id="submit-spinner" aria-hidden="true"></span>
+              <span id="submit-label">開始比較</span>
+            </span>
+          </button>
+        </div>
+        <label for="content" style="margin-top: 16px;">Content</label>
+        <textarea id="content" name="content"
+          placeholder="請貼上新聞內容">馬英九失智疑雲延燒！醫點名：「5種說話方式」恐是失智症前兆 文章作者：早安健康 馬英九基金會「茶壺風暴」延燒，前執行長蕭旭岑與前幕僚王光慈遭指涉「違反財政紀律」並送請司法機關調查。對此，蕭旭岑發文強調，其任內所有事情都依照馬英九的指示處理，馬也全然知情，如今產生誤解的最關鍵的原因是，「馬前總統忘記了很多事，我很難過，不想傷害他」，這番說法迅速引發外界聯想，使整起事件從政治爭議升高至「是否出現記憶衰退甚至失智症狀」的健康狀況討論，掀起外界高度關注。 馬英九健康狀況引關注，「失智疑雲」持續發酵 隨著「忘記事情」的說法擴散，部分政治人物與媒體人也提出自身觀察。例如新黨成員王炳忠在臉書發文附和蕭旭岑，宣稱去年到中國參加海峽論壇時曾與馬英九近距離接觸，當時互動就發現確實「怪怪的」。 描述馬英九曾出現眼神呆滯、行動吃力等狀況，整體神情與身體狀況，不似前些年曾現場見過的馬英九。不過當時，馬英九仍能正常念完事先準備的講稿，只是說話停頓、吞字的次數明顯比以往多。這也讓王炳忠推測，或許這就是蕭旭岑所言，疑似輕微失智的前兆，思緒變得斷斷續續。不過，這些說法多屬個人觀察或轉述，目前並未有任何正式醫療診斷或權威醫療機構證實馬英九的健康狀況。 失智早期徵兆不只「忘東忘西」！「5種說話方式」恐是失智症前兆 失智症的症狀不僅局限於記憶力下降，還可能影響日常生活、判斷能力與社交行為。尤其患者可能出現一系列認知及行為改變，值得親友及早留意。而這些變化，常常最早反映在「說話方式」之中。胸腔暨重症專科醫師黃軒曾於臉書分享，大腦退化初期即可能波及語言功能，透過觀察日常對話的細節，有機會即早辨識異常徵兆。若能及時察覺並就醫評估，將有助於延緩病程進展。當長輩頻繁出現以下情形時，切勿僅以「年紀大、記性差」輕忽： 1、詞窮現象：用模糊詞取代具體名稱 研究顯示，顳葉前部委縮會削弱詞彙檢索能力，患者每分鐘能說出的名詞比健康者少40％。舉例來說，原本應說「雨傘」，確變成「那個……下雨用的東西」。 測試法：請家人描述「眼鏡」，若需超過5秒或用替代詞，建議就醫檢查。 2、分類錯亂：混淆物品基本屬性 當語意分類能力受損時，患者可能無法正確便是物品屬性，例如將智慧型手機稱為「小電視」，或把辣椒歸類成水果，甚至出現「蘋果說成菊子」、「桌子叫成椅子」等錯字情形。 測試法：準備10張動物/家具圖片，若錯誤率超過30％需注意。 3、敘事簡化：失去細節描述能力 語言組織能力下降的話，患者往往難以完整敘述事件。例如一般人會說「先熱鍋、倒油，再爆香蒜末後快炒青菜」，但患者可能簡化為「把菜放進去……然後吵一吵」。此外，當額葉功能退化時，患者使用「然後」、「後來」等連接詞的頻率可能顯著增加，反映雨具組織能力下降。 測試法：錄下3分鐘日常對話，若每句話少於7個字且缺乏形容詞，可能是警訊。 4、逃避指令：無法說明操作步驟 被問到「如何使用微波爐」時，患者會轉移話題：「現在的機器太複雜了！」，這反應執行功能障礙，大腦無法規劃多步驟任務。 測試法：請家人講解「泡咖啡」流程，若跳過關鍵步驟（如按壓濾杯），應提高警覺。 5、專業詞彙流失：特定領域能力衰退 擅長烹飪者，說不出「川燙」，改用「用熱水弄熟」；資深編輯忘記「校對」等術語。 測試法：測試職業相關詞彙，例如教師需說出「教案」、廚師需解釋「勾芡」，若出現困難應就診。</textarea>
+        <p class="status" id="status"></p>
+      </section>
+    </form>
+
+    <section class="result-grid" style="margin-top: 20px;">
+      <article class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">左側輸出</h2>
+          <span class="badge badge-openai">Result</span>
+        </div>
+        <p class="meta" id="left-meta">尚未執行</p>
+        <div class="result-box empty" id="left-result">送出後會在這裡顯示 OpenAI 結果。</div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <h2 class="panel-title">右側輸出</h2>
+          <span class="badge badge-gemini">Result</span>
+        </div>
+        <p class="meta" id="right-meta">尚未執行</p>
+        <div class="result-box empty" id="right-result">送出後會在這裡顯示 Gemini 結果。</div>
+      </article>
+    </section>
+
+    <% if (recentRuns.length) { %>
+      <section style="margin-top: 20px;">
+        <div class="panel-head" style="margin-bottom: 12px;">
+          <h2 class="panel-title">最近比較紀錄</h2>
+          <span class="hint">重新整理後仍可快速回看</span>
+        </div>
+        <div class="history-grid">
+          <% recentRuns.forEach((run)=> { %>
+            <article class="history-card">
+              <h3>
+                <%= run.timestamp %>
+              </h3>
+              <p class="meta">
+                <span>左側: <%= run.left.model %></span>
+                <span>右側: <%= run.right.model %></span>
+              </p>
+              <pre><%= run.left.ok ? run.left.text : `錯誤: ${run.left.error}` %></pre>
+            </article>
+            <article class="history-card">
+              <h3>
+                <%= run.timestamp %>
+              </h3>
+              <p class="meta">
+                <span>左側: <%= run.left.model %></span>
+                <span>右側: <%= run.right.model %></span>
+              </p>
+              <pre><%= run.right.ok ? run.right.text : `錯誤: ${run.right.error}` %></pre>
+            </article>
+            <% }) %>
+        </div>
+      </section>
+      <% } %>
+  </main>
+
+  <script>
+    const form = document.getElementById('compare-form');
+    const submitButton = document.getElementById('submit-button');
+    const status = document.getElementById('status');
+    const leftModelSelect = document.getElementById('left-model');
+    const rightModelSelect = document.getElementById('right-model');
+    const leftSpecs = document.getElementById('left-specs');
+    const rightSpecs = document.getElementById('right-specs');
+    const submitSpinner = document.getElementById('submit-spinner');
+    const submitLabel = document.getElementById('submit-label');
+    const leftMeta = document.getElementById('left-meta');
+    const rightMeta = document.getElementById('right-meta');
+    const leftResult = document.getElementById('left-result');
+    const rightResult = document.getElementById('right-result');
+
+    function formatSeconds(durationMs) {
+      return `${(durationMs / 1000).toFixed(2)} 秒`;
+    }
+
+    function formatUsd(amount) {
+      return `$${Number(amount || 0).toFixed(6)}`;
+    }
+
+    function formatInt(value) {
+      if (!value) {
+        return '-';
+      }
+      return Number(value).toLocaleString('en-US');
+    }
+
+    function renderSpecs(select, target) {
+      const meta = window.MODEL_CATALOG?.[select.value];
+      if (!meta) {
+        target.innerHTML = '';
+        return;
+      }
+
+      target.innerHTML = `
+        <div><strong>輸入價格</strong>${formatUsd(meta.inputPricePer1M)} / 1M</div>
+        <div><strong>輸出價格</strong>${formatUsd(meta.outputPricePer1M)} / 1M</div>
+        <div><strong>最大輸入</strong>${formatInt(meta.maxInputTokens)}</div>
+        <div><strong>最大輸出</strong>${formatInt(meta.maxOutputTokens)}</div>
+        <div><strong>總 Tokens</strong>${formatInt(meta.totalTokensLimit)}</div>
+        <div><strong>知識日期</strong>${meta.knowledgeCutoff || '-'}</div>
+      `;
+    }
+
+    function setResult(target, metaTarget, payload) {
+      target.classList.toggle('error', !payload.ok);
+      target.classList.remove('empty');
+      target.textContent = payload.ok ? payload.text : `錯誤: ${payload.error}`;
+      metaTarget.textContent = `model: ${payload.model} | input: ${payload.inputTokens} | output: ${payload.outputTokens} | total: ${payload.totalTokens} | 輸入費用: ${formatUsd(payload.inputCostUsd)} | 輸出費用: ${formatUsd(payload.outputCostUsd)} | 總費用: ${formatUsd(payload.totalCostUsd)} | 回應時間: ${formatSeconds(payload.durationMs)}`;
+    }
+
+    renderSpecs(leftModelSelect, leftSpecs);
+    renderSpecs(rightModelSelect, rightSpecs);
+    leftModelSelect.addEventListener('change', () => renderSpecs(leftModelSelect, leftSpecs));
+    rightModelSelect.addEventListener('change', () => renderSpecs(rightModelSelect, rightSpecs));
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      submitButton.disabled = true;
+      submitSpinner.classList.add('is-visible');
+      submitLabel.textContent = '比較中';
+      status.dataset.tone = '';
+      status.textContent = '模型執行中，請稍候...';
+
+      const formData = new FormData(form);
+      const payload = Object.fromEntries(formData.entries());
+
+      try {
+        const response = await fetch('/compare/api/run', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || 'Compare request failed');
+        }
+
+        setResult(leftResult, leftMeta, data.left);
+        setResult(rightResult, rightMeta, data.right);
+        status.dataset.tone = 'ok';
+        status.textContent = `完成比較，總回應時間 ${formatSeconds(data.total_duration_ms)}，完成時間 ${data.timestamp}`;
+      } catch (error) {
+        status.dataset.tone = 'error';
+        status.textContent = error.message || '執行失敗';
+      } finally {
+        submitButton.disabled = false;
+        submitSpinner.classList.remove('is-visible');
+        submitLabel.textContent = '開始比較';
+      }
+    });
+  </script>
+</body>
+
+</html>

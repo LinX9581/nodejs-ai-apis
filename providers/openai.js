@@ -33,10 +33,14 @@ export async function chatOpenAI({ model, prompt, content, jsonMode = false }) {
     const response = await openaiClient.chat.completions.create(requestOptions);
     const usage = response.usage || {};
     const text = response?.choices?.[0]?.message?.content ?? '';
+    const inputTokens = usage.prompt_tokens ?? 0;
+    const outputTokens = usage.completion_tokens ?? 0;
     return {
       api: 'openai.chat.completions',
       model,
-      totalTokens: usage.total_tokens ?? (usage.prompt_tokens ?? 0) + (usage.completion_tokens ?? 0),
+      inputTokens,
+      outputTokens,
+      totalTokens: usage.total_tokens ?? (inputTokens + outputTokens),
       text,
     };
   } catch (error) {

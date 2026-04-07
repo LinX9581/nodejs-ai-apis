@@ -2,24 +2,9 @@ import express from 'express';
 import moment from 'moment';
 import fs from 'fs';
 import path from 'path';
-import { GoogleGenAI } from '@google/genai';
+import { chatGeminiGenAI } from '../providers/geminiGenAi.js';
 
 const router = express.Router();
-
-// 延遲初始化 Google GenAI（避免 API Key 未設定時 crash）
-let ai = null;
-
-function getGenAIClient() {
-  if (!process.env.GOOGLE_GENAI_API_KEY) {
-    throw new Error('GOOGLE_GENAI_API_KEY 環境變數未設定');
-  }
-  if (!ai) {
-    ai = new GoogleGenAI({
-      apiKey: process.env.GOOGLE_GENAI_API_KEY,
-    });
-  }
-  return ai;
-}
 
 // 確保 logs 目錄存在
 const logsDir = path.join(process.cwd(), 'logs');
@@ -58,40 +43,6 @@ const MAX_CONTENT_LENGTH = 50000;
 // 生成追蹤 ID
 function generateTraceId() {
   return Date.now().toString();
-}
-
-// GenAI 請求處理函數
-async function chatGenAI({ prompt, content, model, jsonMode = false }) {
-  const generationConfig = {
-    maxOutputTokens: 8192,
-    temperature: 1,
-    topP: 0.95,
-  };
-
-  // JSON Mode
-  if (jsonMode) {
-    generationConfig.responseMimeType = 'application/json';
-  }
-
-  const client = getGenAIClient();
-  
-  const response = await client.models.generateContent({
-    model,
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: `${prompt}\n\n${content}` }],
-      },
-    ],
-    config: generationConfig,
-  });
-
-  const text = response?.text ?? '';
-  const usage = response?.usageMetadata || {};
-  const totalTokens = usage?.totalTokenCount ?? 
-    ((usage?.promptTokenCount ?? 0) + (usage?.candidatesTokenCount ?? 0));
-
-  return { api: 'google-genai', model, totalTokens, text };
 }
 
 // GenAI 請求處理
@@ -134,7 +85,7 @@ async function handleGenAIRequest(req, res, routeConfig) {
     console.log(`[${requestLog.trace_id}] ${req.path} - ${model} (GenAI)`);
     writeToLogFile(requestLog);
 
-    const result = await chatGenAI({ model, prompt, content, jsonMode });
+    const result = await chatGeminiGenAI({ model, prompt, content, jsonMode });
     const durationMs = Date.now() - startAtMs;
     const outputLog = {
       type: 'genai_output',
